@@ -2,11 +2,11 @@
   <div class="chatroom">
     <div class="container">
       <div class="modal is-active" v-show="isOpen">
-        <div class="modal-background" @click="isOpen = false;"></div>
+        <div class="modal-background"></div>
         <div class="modal-content">
           <h1>輸入姓名</h1>
           <div class="field">
-            <input class="input" type="text" v-model.trim="userName">
+            <input class="input" type="text" @keydown.enter="setUserName($event)" v-model.trim="userName">
           </div>
           <div class="field">
             <button class="button" @click="setUserName($event)">送出</button>
@@ -34,19 +34,29 @@
           </nav>
         </div>
 
-        <div class="chat-body">
+        <div ref="chatBody" class="chat-body">
           <div v-for="item in messages" :key="item.id" :class="{'is-selfuser' : item.userName === userName}" class="message-box">
-             <div class="message-name">{{ item.userName }}</div>
-             <div class="message-text">{{ item.message }}</div>
+            <div class="message-name">{{ item.userName }}</div>
+            <img v-if="item.type === 'sticker'" :src="item.url" class="message-sticker" />
+            <div v-else class="message-text">{{ item.message }}</div>
           </div>
         </div>
 
         <div class="chat-footer">
           <footer class="footer">
             <div class="content has-text-centered">
-              <nav class="level">
+              <nav class="level is-mobile">
                 <div class="level-left">
-                  <img class="level-item icon-sticker" src="@/images/icon-smile.png"/>
+                  <div class="dropdown is-up" :class="{'is-active': isSticker}">
+                    <div class="dropdown-trigger" @click="isSticker = !isSticker">
+                      <img class="level-item icon-sticker" src="@/images/icon-smile.png" aria-haspopup="true" aria-controls="dropdown-menu"/>
+                    </div>
+                    <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                      <div class="dropdown-content">
+                        <img v-for="num in 7" :key="num.id" :src="'/img/sticker-'+ num + '.png'" class="dropdown-item sticker-item" @click="sendSticker(num)" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div class="level-item user-message">
                   <textarea class="textarea" @keydown.enter="sendMessage($event)" v-model.trim="message" rows="1"></textarea>
@@ -73,14 +83,25 @@ export default {
     userName: '',
     message: '',
     messages: [],
-    isOpen: false
+    isOpen: false,
+    isSticker: false
   }),
   mounted() {
     this.isOpen = true;
     this.getMessage();
   },
+  updated() {
+   this.$refs.chatBody.scrollTop = this.$refs.chatBody.scrollHeight;
+  },
   methods: {
-    setUserName () {
+    setUserName (e) {
+      if (e.shiftKey) {
+        return false;
+      }
+      if (this.userName.length <= 1 && this.userName.trim() == '') {
+        e.preventDefault();
+        return false;
+      }
       this.isOpen = false;
     },
     getMessage () {
@@ -107,6 +128,15 @@ export default {
       this.message = '';
       e.preventDefault();
     },
+    sendSticker(stickerId) {
+      messageRef.push({
+        userName: this.userName,
+        type: 'sticker',
+        url: '/img/sticker-'+ stickerId + '.png',
+        timeStamp: new Date()
+      });
+      this.isSticker = false;
+    },
   },
 }
 </script>
@@ -122,33 +152,51 @@ export default {
       h1
         font-size: 30px
   .chatbox
-    width: 100%
+    max-width: 600px
+    height: 100vh
+    margin: 0 auto
+    border: 1px solid #e8e8e8
     .chat-header
+      .navbar
+        background-color: #f2f2f2
       .user-name
         color: #ffffff
         background-color: #3273dc
     .chat-body
       height: calc( 100vh - 132px )
       padding: 1em
+      overflow-y: scroll
       .message-box
         width: fit-content
+        max-width: 100%
         margin-bottom: 1em
+        word-wrap: break-word
         .message-name
           color: #7b7b7b
         .message-text
-          padding: 5px 10px
-          border: 1px solid #fdab56
+          padding: 5px 15px
+          border: 1px solid #ff3860
           border-radius: 20px
           border-top-left-radius: 0
+        .message-sticker
+          width: 200px
       .is-selfuser
-        position: absolute
+        margin-left: auto
         text-align: right
         .message-text
+          text-align: left
+          color: #000000b3
+          background-color: #ffdd57
+          border: 1px solid #ffdd57
           border-radius: 20px
           border-top-right-radius: 0
     .chat-footer
       .footer
         padding: 0 1em
+        .dropdown-menu
+          min-width: 560px
+          .sticker-item
+            width: 150px
         .user-message
           padding: 1em
         .icon-sticker,
