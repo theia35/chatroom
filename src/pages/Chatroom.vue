@@ -53,7 +53,7 @@
                     </div>
                     <div class="dropdown-menu" id="dropdown-menu" role="menu">
                       <div class="dropdown-content">
-                        <img v-for="num in 7" :key="num.id" :src="'/img/sticker-'+ num + '.png'" class="dropdown-item sticker-item" @click="sendSticker(num)" />
+                        <img v-for="num in 7" :key="num.id" :src="'img/sticker-'+ num + '.png'" class="dropdown-item sticker-item" @click="sendSticker(num)" />
                       </div>
                     </div>
                   </div>
@@ -132,7 +132,7 @@ export default {
       messageRef.push({
         userName: this.userName,
         type: 'sticker',
-        url: '/img/sticker-'+ stickerId + '.png',
+        url: 'img/sticker-'+ stickerId + '.png',
         timeStamp: new Date()
       });
       this.isSticker = false;
