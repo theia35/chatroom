@@ -108,14 +108,14 @@ export default {
    this.$refs.chatBody.scrollTop = this.$refs.chatBody.scrollHeight;
   },
   methods: {
-    setUserName () {
+    setUserName (e) {
       // if (e.shiftKey) {
       //   return false;
       // }
-      // if (this.userName.length <= 1 && this.userName.trim() == '') {
-      //   e.preventDefault();
-      //   return false;
-      // }
+      if (this.userName.length <= 1 && this.userName.trim() == '') {
+        e.preventDefault();
+        return false;
+      }
       this.isOpen = false;
     },
     getMessage () {
@@ -128,10 +128,10 @@ export default {
       // if (e.shiftKey) {
       //   return false;
       // }
-      // if (this.message.length <= 1 && this.message.trim() == '') {
-      //   e.preventDefault();
-      //   return false;
-      // }
+      if (this.message.length <= 1 && this.message.trim() == '') {
+        e.preventDefault();
+        return false;
+      }
       messageRef.push({
         userName: this.userName,
         type: 'text',
@@ -146,11 +146,7 @@ export default {
       messageRef.push({
         userName: this.userName,
         type: 'sticker',
-<<<<<<< HEAD
-        url: 'img/sticker-'+ stickerId + '.png',
-=======
         url: './img/sticker-'+ stickerId + '.png',
->>>>>>> 5b96bb3632a4d5b8b63db756a8993da2c1b859fd
         timeStamp: new Date()
       });
       this.isSticker = false;
@@ -218,7 +214,7 @@ export default {
           color: #ffffff
           background-color: #3273dc
     .chat-body
-      height: calc( 100vh - 136px )
+      height: calc( 100vh - 140px )
       padding: 1em
       overflow-y: scroll
       .message-box
@@ -233,6 +229,7 @@ export default {
           border: 1px solid #ff3860
           border-radius: 20px
           border-top-left-radius: 0
+          white-space: pre-wrap
         .message-sticker
           width: 200px
         .message-image
@@ -274,4 +271,6 @@ export default {
         .footer
           .dropdown-menu
             min-width: 90vw
+            left: -40px
+            margin-bottom: 22px
 </style>
