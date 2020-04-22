@@ -6,7 +6,7 @@
         <div class="modal-content">
           <h1>輸入姓名</h1>
           <div class="field">
-            <input class="input" type="text" @keydown.enter="setUserName($event)" v-model.trim="userName">
+            <input class="input" type="text" v-model.trim="userName">
           </div>
           <div class="field">
             <button class="button" @click="setUserName($event)">送出</button>
@@ -69,7 +69,7 @@
                 </div>
 
                 <div class="level-item user-message">
-                  <textarea class="textarea" @keydown.enter="sendMessage($event)" v-model.trim="message" rows="1"></textarea>
+                  <textarea class="textarea" v-model.trim="message" rows="1"></textarea>
                 </div>
 
                 <div class="level-right">
@@ -108,14 +108,14 @@ export default {
    this.$refs.chatBody.scrollTop = this.$refs.chatBody.scrollHeight;
   },
   methods: {
-    setUserName (e) {
-      if (e.shiftKey) {
-        return false;
-      }
-      if (this.userName.length <= 1 && this.userName.trim() == '') {
-        e.preventDefault();
-        return false;
-      }
+    setUserName () {
+      // if (e.shiftKey) {
+      //   return false;
+      // }
+      // if (this.userName.length <= 1 && this.userName.trim() == '') {
+      //   e.preventDefault();
+      //   return false;
+      // }
       this.isOpen = false;
     },
     getMessage () {
@@ -125,13 +125,13 @@ export default {
       })
     },
     sendMessage(e) {
-      if (e.shiftKey) {
-        return false;
-      }
-      if (this.message.length <= 1 && this.message.trim() == '') {
-        e.preventDefault();
-        return false;
-      }
+      // if (e.shiftKey) {
+      //   return false;
+      // }
+      // if (this.message.length <= 1 && this.message.trim() == '') {
+      //   e.preventDefault();
+      //   return false;
+      // }
       messageRef.push({
         userName: this.userName,
         type: 'text',
@@ -257,6 +257,8 @@ export default {
             width: 150px
         .user-message
           padding: 1em
+          .textarea
+            resize: none
         .icon-uploadImg,
         .icon-sticker,
         .icon-submit
