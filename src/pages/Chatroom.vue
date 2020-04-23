@@ -6,7 +6,7 @@
         <div class="modal-content">
           <h1>輸入姓名</h1>
           <div class="field">
-            <input class="input" type="text" v-model.trim="userName">
+            <input class="input" type="text" v-model.trim="userName" @keydown.enter="setUserName($event)">
           </div>
           <div class="field">
             <button class="button" @click="setUserName($event)">送出</button>
@@ -24,12 +24,16 @@
             </div>
             <div class="level-right">
               <div class="level-item">
-                <span>
-                  {{ userName }}
-                </span>
+                <h1>{{ userName }}</h1>
               </div>
             </div>
           </nav>
+          <div class="notice">
+            <div class="notice-text">你還在忙著刪訊息嗎? 時間管理人</div> 
+            <div class="icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="black" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/><path fill="none" d="M0 0h24v24H0V0z"/></svg>
+            </div>
+          </div>
         </div>
 
         <div ref="chatBody" class="chat-body">
@@ -39,7 +43,7 @@
             <img v-if="item.type === 'image'" :src="item.url" class="message-image" />
             <div v-if="item.type === 'text'" class="message-text">{{ item.message }}</div>
           </div>
-          <div v-if="isUpload" class="upload-img">
+          <div v-show="isUpload" class="upload-img">
             <progress class="progress is-primary"  :value="progress" max="100">{{ progress }}</progress>
           </div>
         </div>
@@ -69,7 +73,7 @@
                 </div>
 
                 <div class="level-item user-message">
-                  <textarea class="textarea" v-model.trim="message" rows="1"></textarea>
+                  <textarea class="textarea" v-model.trim="message" @keydown.enter="sendMessage($event)" rows="1"></textarea>
                 </div>
 
                 <div class="level-right">
@@ -94,14 +98,13 @@ export default {
     userName: '',
     message: '',
     messages: [],
-    isOpen: false,
+    isOpen: true,
     isSticker: false,
     isUpload: false,
     progress: '',
     file: ''
   }),
   mounted() {
-    this.isOpen = true;
     this.getMessage();
   },
   updated() {
@@ -109,9 +112,9 @@ export default {
   },
   methods: {
     setUserName (e) {
-      // if (e.shiftKey) {
-      //   return false;
-      // }
+      if (e.shiftKey) {
+        return false;
+      }
       if (this.userName.length <= 1 && this.userName.trim() == '') {
         e.preventDefault();
         return false;
@@ -125,9 +128,9 @@ export default {
       })
     },
     sendMessage(e) {
-      // if (e.shiftKey) {
-      //   return false;
-      // }
+      if (e.shiftKey) {
+        return false;
+      }
       if (this.message.length <= 1 && this.message.trim() == '') {
         e.preventDefault();
         return false;
@@ -151,36 +154,29 @@ export default {
       });
       this.isSticker = false;
     },
-    async onFileChange (e) {
-      this.file = e.target.files[0];
-      if (!this.file) {
-        this.$refs.uploadImg.value = '';
-        this.isUpload = false;
-        return;
-      } else {
-        let self = this;
-        let storageRef = firebaseObj.storage.ref(new Date().getTime() + this.file.name).put(this.file);
-        this.progress = '0';
-        this.isUpload = true;
-        
-        storageRef.on('state_changed', (snapshot) => {
-          self.progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        }, (error) => {
-          console.log(error);
-          // Handle unsuccessful uploads
-        }, () => {
-          storageRef.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-            console.log('File available at', downloadURL);
-            messageRef.push({
-              userName: self.userName,
-              type: 'image',
-              url: downloadURL,
-              timeStamp: new Date()
-            })
-            self.isUpload = false;
-          });
+    onFileChange (e) {
+      let self = this;
+      self.file = e.target.files[0];
+      self.progress = '0';
+      self.isUpload = true;
+      
+      let storageRef = firebaseObj.storage.ref(new Date().getTime() + self.file.name).put(self.file);
+      storageRef.on('state_changed', (snapshot) => {
+        self.progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      }, (error) => {
+        console.log(error);
+      }, () => {
+        storageRef.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+          console.log('File available at', downloadURL);
+          messageRef.push({
+            userName: self.userName,
+            type: 'image',
+            url: downloadURL,
+            timeStamp: new Date()
+          })
+          self.isUpload = false;
         });
-      }
+      });
     }
   },
 }
@@ -189,13 +185,14 @@ export default {
 <style lang="sass" scoped>
 .chatroom
   width: 100%
+  h1
+    font-size: 24px
+    font-weight: bold
   .modal
     .modal-content
       background-color: #ffffff
       padding: 1em
       border-radius: 10px
-      h1
-        font-size: 30px
   .chatbox
     max-width: 600px
     height: 100vh
@@ -204,17 +201,21 @@ export default {
     .chat-header
       .level
         background-color: #f2f2f2
-        min-height: 3.25rem
+        margin-bottom: 0
         .level-left,
         .level-right
           padding: 1rem
-          line-height: 1.5
-          font-size: 1em
         .level-right
           color: #ffffff
           background-color: #3273dc
+      .notice
+        display: flex
+        justify-content: space-between
+        padding: 1em 1.5em
+        background-color: #dfceff
+        font-weight: bold
     .chat-body
-      height: calc( 100vh - 140px )
+      height: calc( 100vh - 210px )
       padding: 1em
       overflow-y: scroll
       .message-box
@@ -235,6 +236,9 @@ export default {
         .message-image
           max-width: 80%
           max-height: 340px
+      .upload-img
+        max-width: 50%
+        margin-left: auto
       .is-selfuser
         margin-left: auto
         text-align: right
